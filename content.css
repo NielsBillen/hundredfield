@@ -1,0 +1,31 @@
+/*-----------------------------------------------------------------------------
+ * CSS File containing reusable styles for the website
+ *---------------------------------------------------------------------------*/
+
+/* make html fill the entire page */
+html {
+    width: 100%;
+    height: 100%;
+}
+
+/* make body fill the entire page */
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
+
+/* font definition */
+@font-face {
+    font-family: "Raleway";
+    src: url("fonts/Raleway-Bold.ttf");
+    font-weight: bold;
+}
+
+/* font definition */
+@font-face {
+    font-family: "Chalk";
+    src: url("fonts/Raleway-SemiBold.ttf");
+    /*src: url("fonts/Chawp.ttf");*/
+    font-weight: bold;
+}
