@@ -95,6 +95,19 @@ HundredFieldCore.Cell.prototype.needsBorder = function () {
 };
 
 /*
+ * HundredFieldCore.addClickListener(element, handler): 
+ */
+HundredFieldCore.addClickListener = function (element, handler) {
+    "use strict";
+    
+    if (typeof document.body.ontouchend === "undefined") {
+        element.addEventListener("touchend", handler);
+    } else {
+        element.addEventListener("click", handler);
+    }
+};
+
+/*
  * HundredFieldCore.Cell.prototype.addClickListener(handler): 
  *
  * adds the given handler as a click listener to this cell. When the cell
@@ -107,16 +120,9 @@ HundredFieldCore.Cell.prototype.needsBorder = function () {
 HundredFieldCore.Cell.prototype.addClickListener = function (handler) {
     "use strict";
     
-    var self = this;
-    if ((typeof document.body.ontouchstart) === "undefined") {
-        this.container.addEventListener("click", function (e) {
-            handler(e, self);
-        }, true);
-    } else {
-        this.container.addEventListener("touchstart", function (e) {
-            handler(e, self);
-        }, true);
-    }
+    HundredFieldCore.addClickListener(function (e) {
+        handler(e, this);
+    }.bind(this));
 };
 
 /*
@@ -336,59 +342,22 @@ HundredFieldCore.HundredField.prototype.addInputListener = function (handler) {
 
 HundredFieldCore.HundredField.prototype.resize = function () {
     "use strict";
-        
-    var container, header, page, border, wrapper, canvas, table, buttons,
-        size, ratio, headerSize, preferedPageHeight, pageHeight, pageWidth, buttonSize, padding;
     
-    // retrieve the necessary elements
-    container = document.getElementById("hundredfield-container");
-    header = document.getElementById("hundredfield-header");
-    page = document.getElementById("hundredfield-page");
+    var border, wrapper, table, canvas, size;
+    
     border = document.getElementById("hundredfield-border");
-    canvas = document.getElementById("hundredfield-canvas");
     wrapper = document.getElementById("hundredfield-wrapper");
     table = document.getElementById("hundredfield-table");
-    buttons = document.getElementById("hundredfield-button-container");
+    canvas = document.getElementById("hundredfield-canvas");
     
-    // determine the preferred height
-    headerSize = 0.1 * Math.min(container.offsetWidth, container.offsetHeight);
-    buttonSize = 0.1 * Math.min(container.offsetWidth, container.offsetHeight);
-    preferedPageHeight = container.offsetHeight - headerSize - buttonSize;
+    size = Math.floor(Math.min(border.clientWidth, border.clientHeight) * 0.095) * 10;
     
-    // determine maximum size allowed size
-    size = Math.floor(Math.min(container.offsetWidth, preferedPageHeight));
-    
-    // recalculate the sizes
-    headerSize = (container.offsetHeight - size) * 0.5;
-    buttonSize = (container.offsetHeight - size) * 0.5;
-    
-    // set the sizes
-    ratio = this.nbOfRows / this.nbOfColumns;
-    
-    if (ratio > 1.0) {
-        pageWidth = (size / ratio);
-        pageHeight = size;
-    } else {
-        pageWidth = size;
-        pageHeight = (size / ratio);
-    }
-    
-    page.style.width = pageWidth + "px";
-    page.style.height = pageHeight + "px";
-    header.style.height = headerSize + "px";
-    header.style.fontSize = Math.min(0.1 * size, 0.75 * headerSize) + "px";
-    
-    // calculate the padding
-    padding = Math.ceil(0.02 * size);
-    border.style.width = (pageWidth - 2 * padding) + "px";
-    border.style.height = (pageHeight - 2 * padding) + "px";
-    wrapper.style.width = (pageWidth - 4 * padding) + "px";
-    wrapper.style.height = (pageHeight - 4 * padding) + "px";
-    canvas.width = (pageWidth - 4 * padding);
-    canvas.height = (pageHeight - 4 * padding);
-    table.style.width = (pageWidth - 4 * padding) + "px";
-    table.style.height = (pageHeight - 4 * padding) + "px";
-    buttons.style.width = (pageWidth - 2 * padding) + "px";
+    wrapper.style.width = size + "px";
+    wrapper.style.height = size + "px";
+    table.style.width = size + "px";
+    table.style.height = size + "px";
+    canvas.width = size;
+    canvas.height = size;
     
     this.redraw();
 };
@@ -410,6 +379,7 @@ HundredFieldCore.HundredField.prototype.setHidden = function (value) {
         }
     }
     
+
     this.redraw();
 };
 

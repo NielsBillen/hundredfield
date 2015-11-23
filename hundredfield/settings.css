@@ -1,0 +1,47 @@
+body {
+    background-image: url(../images/wood_background.jpg);
+    background-repeat: repeat;
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#settings-header {
+    font-family: "Raleway";
+    font-size: 7vmin;
+    height: 10vmin;
+}
+
+#settings-container {
+    width: 50%;
+}
+
+.bordered {
+    width: 100%;
+    
+    font-size: 3vmin;
+    font-family: "Raleway";
+    color: white;
+    
+    box-sizing: border-box;
+    padding: 2vmin 4vmin;
+    margin: 1vmin;
+    
+    border-radius: 1.5vmin;
+    box-shadow: 0rem 0rem 1rem 0.2rem black;
+    border: 1px solid darkslategrey;
+    
+    background-image: url(../images/border.jpg);
+    background-repeat: repeat;
+}
+
+#offset-label {
+    padding-right: 1em;
+}
+
+#offset {
+    font-family: "Raleway";
+    font-size: 3vmin;
+    padding: 0.5rem;
+}

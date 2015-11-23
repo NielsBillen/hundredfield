@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang = "nl">
+<html lang = "nl" manifest="../cache.manifest">
     <head>
         <!-- metadata -->
         <title>Honderdveld</title>
@@ -13,37 +13,29 @@
         <!-- style sheets inclusions -->
         <link rel="stylesheet" type="text/css" href="../content.css"></link>
         <link rel="stylesheet" type="text/css" href="hundredfield.css"></link>
-        <script src = "hundredfield.js" defer></script>
-        <script src = "hundredfield_fill.js" defer></script>
+
+        <!-- manifest inclusion -->
+        <link rel="manifest" href="../manifest.json"></link>
+
+        <!-- icons inclusion -->
+        <link rel="shortcut icon" type="image/png" sizes="512x512" href="../icons/icon512x512.png"></link>
+        <link rel="apple-touch-icon" type="image/png" sizes="512x512" href="../icons/icon512x512.png"></link>
     </head>
-    <body>
-        <div id = "hundredfield-container">
-            <div id = "hundredfield-header">Honderdveld</div>
-            <div id = "hundredfield-page">
-                <div id = "hundredfield-border">
-                    <div id = "hundredfield-wrapper">
-                        <table id = "hundredfield-table"></table>
-                        <canvas id = "hundredfield-canvas"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div id = "hundredfield-button-container">
-                <div id = "hundredfield-button-start" class = "hundredfield-button">
-                    Start
-                </div>
-                <div id = "hundredfield-button-hide" class = "hundredfield-button">
-                    Verberg veld
-                </div>
-                <div id = "hundredfield-button-check" class = "hundredfield-button">
-                    Controleer
-                </div>
-                <div id = "hundredfield-button-score" class = "hundredfield-button">
-                    Score
-                </div>
-                <div id = "hundredfield-button-reset" class = "hundredfield-button">
-                    Herstarten
-                </div>
+    <body id = "hundredfield">
+        <header id = "hundredfield-header">
+            Honderdveld
+            <img id = "gearicon" src = "../images/gear.png" onclick = "window.location = 'settings.html'"></img>
+        </header>
+        <div id = "hundredfield-border">
+            <div id = "hundredfield-wrapper">
+                <table id = "hundredfield-table"></table>
+                <canvas id = "hundredfield-canvas"></canvas>
             </div>
         </div>
+        <div id = "hundredfield-button-container">
+        </div>
     </body>
+
+    <script src = "hundredfield.js"></script>
+    <script src = "hundredfield_fill.js"></script>
 </html>

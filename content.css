@@ -22,10 +22,6 @@ body {
     font-weight: bold;
 }
 
-/* font definition */
-@font-face {
-    font-family: "Chalk";
-    src: url("fonts/Raleway-SemiBold.ttf");
-    /*src: url("fonts/Chawp.ttf");*/
-    font-weight: bold;
+button {
+    cursor: pointer;
 }
