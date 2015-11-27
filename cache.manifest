@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# Updated 21/11/2015 13:22
+# Updated 27/11/2015 13:22
 
 CACHE:
 fonts/Raleway-Bold.ttf
@@ -8,7 +8,8 @@ hundredfield/hundredfield_auto.js
 hundredfield/hundredfield_fill.js
 hundredfield/hundredfield.css
 hundredfield/hundredfield.html
-hundredfield/hundredfield.js
+hundredfield/hundredfieldlibrary.js
+hundredfield/random.js
 hundredfield/settings.css
 hundredfield/settings.html
 hundredfield/settings.js
