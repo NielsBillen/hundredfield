@@ -2,57 +2,42 @@
  * Javascript containing the core elemens of the Hundredfield
  *---------------------------------------------------------------------------*/
 
-/*global console */
+/*global console, HTMLTableCellElement, HTMLInputElement, Random*/
 
-/* define the HundredFieldCore namespace */
-var HundredFieldCore = HundredFieldCore || {};
+/* define the HundredFieldLibrary namespace */
+var HundredFieldLibrary = HundredFieldLibrary || {};
 
 /*-----------------------------------------------------------------------------
  *
- * HundredFieldCore.Random: utility class for fast generation of
- *                      pseudo-random numbers.
+ * HundredFieldLibrary.Cell: represents a cell in the hundredfield.
  *
  *---------------------------------------------------------------------------*/
 
 /*
- * HundredFieldCore.Random: creates a new random number generator.
- * 
- * @param seed  the seed to initialize the random number generator with.
- */
-HundredFieldCore.Random = function (seed) {
-    "use strict";
-    this.seed = Math.abs(seed);     // seed for rng
-};
-
-/*
- * HundredField.Random.random(): 
- * 
- * generates a new pseudo-random number between 0 and 1.
- *
- * @return a new pseudo-random number between 0 and 1.
- */
-HundredFieldCore.Random.prototype.random = function () {
-    "use strict";
-        
-    this.seed = (1103515245 * this.seed + 12345) % 2147483647;
-    return this.seed * 4.656612875245796924105750827168e-10;
-};
-
-/*-----------------------------------------------------------------------------
- *
- * HundredFieldCore.Cell: represents a cell in the hundredfield.
- *
- *---------------------------------------------------------------------------*/
-
-/*
- * HundredFieldCore.Cell: creates a new cell for the hundredfield.
+ * HundredFieldLibrary.Cell: creates a new cell for the hundredfield.
  *
  * @param container     the cell in the table.
  * @param input         the input element for filling the cell.
  * @param solution      the solution (i.e. the corrent) value of this cell.
  */
-HundredFieldCore.Cell = function (row, column, container, input, solution) {
+HundredFieldLibrary.Cell = function (row, column, container, input, solution) {
     "use strict";
+    if (typeof row !== "number") {
+        throw "the given row '" + row + "' is not a number!";
+    }
+    if (typeof column !== "number") {
+        throw "the given column '" + column + "' is not a number!";
+    }
+    if (typeof solution !== "number") {
+        throw "the given solution '" + solution + "' is not a number!";
+    }
+    if (!(container instanceof HTMLTableCellElement)) {
+        throw "the given container is not a table cell!";
+    }
+    if (!(input instanceof HTMLInputElement)) {
+        throw "the given input is not an HTMLInputElement!";
+    }
+    
     this.row = row;                 // the row where this cell appears
     this.column = column;           // the column where this cell appears
     this.container = container;     // the table cell
@@ -63,14 +48,14 @@ HundredFieldCore.Cell = function (row, column, container, input, solution) {
 };
 
 /*
- * HundredFieldCore.Cell.prototype.setStart(value):
+ * HundredFieldLibrary.Cell.prototype.setStart(value):
  *
  * Enables/disables this cell as a start cell depending on the
  * given value.
  *
  * @param value     whether this cell is a start cell.
  */
-HundredFieldCore.Cell.prototype.setStart = function (value) {
+HundredFieldLibrary.Cell.prototype.setStart = function (value) {
     "use strict";
 
     this.isstart = value;
@@ -78,9 +63,11 @@ HundredFieldCore.Cell.prototype.setStart = function (value) {
     if (value === true) {
         this.input.value = this.getSolution();
         this.input.classList.add("hundredfield-input-start");
-    } else {
+    } else if (value === false) {
         this.input.value = "";
         this.input.classList.remove("hundredfield-input-start");
+    } else {
+        throw "the given value '" + value + " is not a boolean!";
     }
 };
 
@@ -89,18 +76,30 @@ HundredFieldCore.Cell.prototype.setStart = function (value) {
  *
  * @return true when this cell needs a border when it is drawn.
  */
-HundredFieldCore.Cell.prototype.needsBorder = function () {
+HundredFieldLibrary.Cell.prototype.needsBorder = function () {
     "use strict";
     return this.isstart || this.selected;
 };
 
 /*
- * HundredFieldCore.addClickListener(element, handler): 
+ * HundredFieldLibrary.addClickListener(element, handler): 
+ *
+ * Method which attaches a "click" or a "touchend" listener to the 
+ * given element which calls the given 'handler' when the event
+ * is fired.
+ *
+ * A "touchend" event is used when the platform allows this interaction.
+ * This reduces the amount of delay on the event handling on touch screen
+ * devices.
+ *
+ * @param element   the element to which the event listener must be added.
+ * @param handler   the handler which needs to be called when the event
+ *                  is triggered.
  */
-HundredFieldCore.addClickListener = function (element, handler) {
+HundredFieldLibrary.addClickListener = function (element, handler) {
     "use strict";
     
-    if (typeof document.body.ontouchend === "undefined") {
+    if (typeof document.body.ontouchend !== "undefined") {
         element.addEventListener("touchend", handler);
     } else {
         element.addEventListener("click", handler);
@@ -108,7 +107,7 @@ HundredFieldCore.addClickListener = function (element, handler) {
 };
 
 /*
- * HundredFieldCore.Cell.prototype.addClickListener(handler): 
+ * HundredFieldLibrary.Cell.prototype.addClickListener(handler): 
  *
  * adds the given handler as a click listener to this cell. When the cell
  * is clicked / touched (on mobile devices), the handler function will be
@@ -117,16 +116,16 @@ HundredFieldCore.addClickListener = function (element, handler) {
  *
  * @param handler   the click handler which is called on a click event.
  */
-HundredFieldCore.Cell.prototype.addClickListener = function (handler) {
+HundredFieldLibrary.Cell.prototype.addClickListener = function (handler) {
     "use strict";
     
-    HundredFieldCore.addClickListener(function (e) {
+    HundredFieldLibrary.addClickListener(this.container, function (e) {
         handler(e, this);
     }.bind(this));
 };
 
 /*
- * HundredFieldCore.Cell.prototype.addInputListener(handler): 
+ * HundredFieldLibrary.Cell.prototype.addInputListener(handler): 
  *
  * adds the given handler as an input listener to this cell. When the value of
  * this cell is changed, the handler function will be called with the change 
@@ -136,72 +135,72 @@ HundredFieldCore.Cell.prototype.addClickListener = function (handler) {
  * @param handler   the input handler which is called on an input change 
  *                  event.
  */
-HundredFieldCore.Cell.prototype.addInputListener = function (handler) {
+HundredFieldLibrary.Cell.prototype.addInputListener = function (handler) {
     "use strict";
     
-    var self = this;
-    
     this.getInput().addEventListener("change", function (e) {
-        handler(e, self);
-    });
+        handler(e, this);
+    }.bind(this));
     this.getInput().addEventListener("keyup", function (e) {
-        handler(e, self);
-    });
+        handler(e, this);
+    }.bind(this));
 };
 
 /*
- * HundredFieldCore.Cell.prototype.getSolution():
+ * HundredFieldLibrary.Cell.prototype.getSolution():
  *
  * Returns the solution of this cell as an integer.
  */
-HundredFieldCore.Cell.prototype.getSolution = function () {
+HundredFieldLibrary.Cell.prototype.getSolution = function () {
     "use strict";
     return this.solution;
 };
 
 /*
- * HundredFieldCore.Cell.prototype.getInputValue():
+ * HundredFieldLibrary.Cell.prototype.getInputValue():
  *
  * Returns the input entered in this cell as an integer value.
  */
-HundredFieldCore.Cell.prototype.getInputValue = function () {
+HundredFieldLibrary.Cell.prototype.getInputValue = function () {
     "use strict";
     return parseInt(this.input.value.replace(/^\s+|\s+$/gm, '').trim(), 10);
 };
 
 /*
- * HundredFieldCore.Cell.prototype.getInput():
+ * HundredFieldLibrary.Cell.prototype.getInput():
  *
  * Returns the <input> element of this cell.
  *
  * @return the <input> element of this cell.
  */
-HundredFieldCore.Cell.prototype.getInput = function () {
+HundredFieldLibrary.Cell.prototype.getInput = function () {
     "use strict";
     return this.input;
 };
 
 /*
- * HundredFieldCore.cell.prototype.setSelected()
+ * HundredFieldLibrary.cell.prototype.setSelected()
  *
  * Selects this cell if the given value is true, or deselects it otherwise.
  *
  * @param   value   whether this cell is selected (true) or not (false).
  */
-HundredFieldCore.Cell.prototype.setSelected = function (value) {
+HundredFieldLibrary.Cell.prototype.setSelected = function (value) {
     "use strict";
     
     this.selected = value;
     
     if (value === true) {
         this.container.classList.add("hundredfield-cell-selected");
-    } else {
+    } else if (value === false) {
         this.container.classList.remove("hundredfield-cell-selected");
+    } else {
+        throw "the given value is not a boolean value!";
     }
 };
 
 /*
- * HundredFieldCore.cell.prototype.setHidden()
+ * HundredFieldLibrary.cell.prototype.setHidden()
  *
  * Hides this cell when the given value is (true) or makes it visible
  * when the given value is (false). Note that start cells cannot be
@@ -209,37 +208,50 @@ HundredFieldCore.Cell.prototype.setSelected = function (value) {
  *
  * @param value     whether this cell should be hidden (true) or not (false).
  */
-HundredFieldCore.Cell.prototype.setHidden = function (value) {
+HundredFieldLibrary.Cell.prototype.setHidden = function (value) {
     "use strict";
 
     if (this.isstart) {
         return;
     }
     
-    if (value) {
+    if (value === true) {
         if (this.selected) {
             this.container.classList.add("hundredfield-cell-hidden-selected");
         } else {
             this.container.classList.add("hundredfield-cell-hidden");
         }
-    } else {
+    } else if (value === false) {
         this.container.classList.remove("hundredfield-cell-hidden-selected");
         this.container.classList.remove("hundredfield-cell-hidden");
+    } else {
+        throw "the given value is not a boolean value!";
     }
 };
 
 /*-----------------------------------------------------------------------------
- * HundredFieldCore.init(rows, columns, start)
+ * HundredFieldLibrary.init(rows, columns, start)
  *
  * Initializes a new hundredfield with the given number of rows, the given
  * number of columns and where the first cell starts at the given input
  * number.
  *---------------------------------------------------------------------------*/
 
-HundredFieldCore.HundredField = function (rows, columns, start) {
+HundredFieldLibrary.HundredField = function (rows, columns, start) {
     "use strict";
     
-    var r, c, row, cellRow, table, cell, tableCell, inputCell, self;
+    // check the input arguments
+    if (typeof rows !== "number") {
+        throw "the given row '" + rows + "' is not a number!";
+    }
+    if (typeof columns !== "number") {
+        throw "the given column '" + columns + "' is not a number!";
+    }
+    if (typeof start !== "number") {
+        throw "the given solution '" + start + "' is not a number!";
+    }
+    
+    var r, c, row, cellRow, table, cell, tableCell, inputCell;
     
     this.nbOfRows = rows;
     this.nbOfColumns = columns;
@@ -265,7 +277,7 @@ HundredFieldCore.HundredField = function (rows, columns, start) {
                                     
             tableCell.appendChild(inputCell);
             
-            cell = new HundredFieldCore.Cell(r, c, tableCell, inputCell, start);
+            cell = new HundredFieldLibrary.Cell(r, c, tableCell, inputCell, start);
             cellRow.push(cell);
             start += 1;
         }
@@ -274,34 +286,47 @@ HundredFieldCore.HundredField = function (rows, columns, start) {
     }
     
     this.resize();
-    self = this;
+    
     window.addEventListener('resize', function (e) {
-        self.resize();
-    }, true);
+        this.resize();
+    }.bind(this), true);
 };
 
 /*
- * HundredFieldCore.HundredField.prototype.get()
+ * HundredFieldLibrary.HundredField.prototype.get()
  * 
  * Returns the cell at the given row and column.
  *
  * @param row       the row where to find the cell
  * @param column    the column where to find the cell.
  */
-HundredFieldCore.HundredField.prototype.get = function (row, column) {
+HundredFieldLibrary.HundredField.prototype.get = function (row, column) {
     "use strict";
+    if (typeof row !== "number") {
+        throw "the given row '" + row + "' is not a number!";
+    } else if (row < 0) {
+        throw "the given row " + row + " cannot be smaller than zero!";
+    } else if (row >= this.nbOfRows) {
+        throw "the given row " + row + " cannot be larger than or equal to the number of rows in this table " + this.nbOfColumns;
+    } else if (typeof column !== "number") {
+        throw "the given column '" + column + "' is not a number!";
+    } else if (column < 0) {
+        throw "the given column " + column + " cannot be smaller than zero!";
+    } else if (column >= this.nbOfColumns) {
+        throw "the given column " + column + " cannot be larger than or equal to the number of rows in this table " + this.nbOfRows;
+    }
     return this.cells[row][column];
 };
 
 /*
- * HundredFieldCore.HundredField.prototype.addClickListener()
+ * HundredFieldLibrary.HundredField.prototype.addClickListener()
  *
  * Adds the given click handler to this hundredfield, whech will be called
  * whenever a cell is clicked in the hundredfield.
  *
  * @param handler   the click handler.
  */
-HundredFieldCore.HundredField.prototype.addClickListener = function (handler) {
+HundredFieldLibrary.HundredField.prototype.addClickListener = function (handler) {
     "use strict";
     
     var r, c;
@@ -314,14 +339,14 @@ HundredFieldCore.HundredField.prototype.addClickListener = function (handler) {
 };
 
 /*
- * HundredFieldCore.HundredField.prototype.addClickListener()
+ * HundredFieldLibrary.HundredField.prototype.addClickListener()
  *
  * Adds the given click handler to this hundredfield, whech will be called
  * whenever a cell is clicked in the hundredfield.
  *
  * @param handler   the click handler.
  */
-HundredFieldCore.HundredField.prototype.addInputListener = function (handler) {
+HundredFieldLibrary.HundredField.prototype.addInputListener = function (handler) {
     "use strict";
     
     var r, c;
@@ -334,13 +359,13 @@ HundredFieldCore.HundredField.prototype.addInputListener = function (handler) {
 };
 
 /*-----------------------------------------------------------------------------
- * HundredFieldCore.resize()
+ * HundredFieldLibrary.resize()
  *
  * Listens for resize events and sets the sizes of all the objects
  * accordingly.
  *---------------------------------------------------------------------------*/
 
-HundredFieldCore.HundredField.prototype.resize = function () {
+HundredFieldLibrary.HundredField.prototype.resize = function () {
     "use strict";
     
     var border, wrapper, table, canvas, size;
@@ -350,7 +375,7 @@ HundredFieldCore.HundredField.prototype.resize = function () {
     table = document.getElementById("hundredfield-table");
     canvas = document.getElementById("hundredfield-canvas");
     
-    size = Math.floor(Math.min(border.clientWidth, border.clientHeight) * 0.095) * 10;
+    size = Math.floor(Math.min(border.clientWidth, border.clientHeight) * 0.096) * 10;
     
     wrapper.style.width = size + "px";
     wrapper.style.height = size + "px";
@@ -362,12 +387,12 @@ HundredFieldCore.HundredField.prototype.resize = function () {
     this.redraw();
 };
 
-HundredFieldCore.HundredField.prototype.isHidden = function () {
+HundredFieldLibrary.HundredField.prototype.isHidden = function () {
     "use strict";
     return this.hidden;
 };
 
-HundredFieldCore.HundredField.prototype.setHidden = function (value) {
+HundredFieldLibrary.HundredField.prototype.setHidden = function (value) {
     "use strict";
     
     this.hidden = value;
@@ -383,7 +408,7 @@ HundredFieldCore.HundredField.prototype.setHidden = function (value) {
     this.redraw();
 };
 
-HundredFieldCore.HundredField.prototype.getSelectedCells = function () {
+HundredFieldLibrary.HundredField.prototype.getSelectedCells = function () {
     "use strict";
     
     var row, column, result;
@@ -401,7 +426,7 @@ HundredFieldCore.HundredField.prototype.getSelectedCells = function () {
     return result;
 };
 
-HundredFieldCore.HundredField.prototype.nbOfSelectedCells = function () {
+HundredFieldLibrary.HundredField.prototype.nbOfSelectedCells = function () {
     "use strict";
     
     var row, column, result;
@@ -419,7 +444,7 @@ HundredFieldCore.HundredField.prototype.nbOfSelectedCells = function () {
     return result;
 };
 
-HundredFieldCore.HundredField.prototype.areSelectedFilled = function () {
+HundredFieldLibrary.HundredField.prototype.areSelectedFilled = function () {
     "use strict";
     
     // check if all cells have input
@@ -442,7 +467,7 @@ HundredFieldCore.HundredField.prototype.areSelectedFilled = function () {
  * Redraw the grid of lines
  *---------------------------------------------------------------------------*/
 
-HundredFieldCore.HundredField.prototype.redraw = function () {
+HundredFieldLibrary.HundredField.prototype.redraw = function () {
     "use strict";
     
     var i, j, x, y, canvas, table, margin, offset, ctx, width, height, brushRadius;
@@ -453,7 +478,6 @@ HundredFieldCore.HundredField.prototype.redraw = function () {
     ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    /*margin = parseFloat((table.currentStyle || window.getComputedStyle(table)).padding);*/
     brushRadius = canvas.width * 0.004;
     offset = 0;
     
@@ -467,7 +491,7 @@ HundredFieldCore.HundredField.prototype.redraw = function () {
                 y = j * height + brushRadius * offset;
                 
                 // draw a vertical line
-                HundredFieldCore.chalkDraw(x, y, x, y + height, ctx, 2 * (i * this.nbOfColumns + j), brushRadius);
+                HundredFieldLibrary.chalkDraw(x, y, x, y + height, ctx, 2 * (i * this.nbOfColumns + j), brushRadius);
             }
         }
         
@@ -477,7 +501,7 @@ HundredFieldCore.HundredField.prototype.redraw = function () {
                 y = i * height + brushRadius * offset;
                 
                 // draw a horizontal line
-                HundredFieldCore.chalkDraw(x, y, x + width, y, ctx, 2 * (i * this.nbOfColumns + j) + 1, brushRadius);
+                HundredFieldLibrary.chalkDraw(x, y, x + width, y, ctx, 2 * (i * this.nbOfColumns + j) + 1, brushRadius);
             }
         }
     } else {
@@ -491,11 +515,11 @@ HundredFieldCore.HundredField.prototype.redraw = function () {
                 
                 // draw a vertical line
                 if (i === 0 && this.nbOfColumns > 0 && this.get(j, i).needsBorder()) {
-                    HundredFieldCore.chalkDraw(x, y, x, y + height, ctx, 4 * i + 2 * j, brushRadius);
+                    HundredFieldLibrary.chalkDraw(x, y, x, y + height, ctx, 4 * i + 2 * j, brushRadius);
                 } else if (i > 0 && i < this.nbOfColumns && (this.get(j, i).needsBorder() || this.get(j, i - 1).needsBorder())) {
-                    HundredFieldCore.chalkDraw(x, y, x, y + height, ctx, 4 * i + 2 * j + 1, brushRadius);
+                    HundredFieldLibrary.chalkDraw(x, y, x, y + height, ctx, 4 * i + 2 * j + 1, brushRadius);
                 } else if (i === this.nbOfColumns && (this.get(j, i - 1).needsBorder())) {
-                    HundredFieldCore.chalkDraw(x, y, x, y + height, ctx, 4 * i + 2 * j + 1, brushRadius);
+                    HundredFieldLibrary.chalkDraw(x, y, x, y + height, ctx, 4 * i + 2 * j + 1, brushRadius);
                 }
             }
         }
@@ -507,11 +531,11 @@ HundredFieldCore.HundredField.prototype.redraw = function () {
                 
                 // draw a vertical line
                 if (i === 0 && this.nbOfColumns > 0 && this.get(i, j).needsBorder()) {
-                    HundredFieldCore.chalkDraw(x, y, x + width, y, ctx, 4 * i, brushRadius);
+                    HundredFieldLibrary.chalkDraw(x, y, x + width, y, ctx, 4 * i, brushRadius);
                 } else if (i > 0 && i < this.nbOfColumns && (this.get(i, j).needsBorder() || this.get(i - 1, j).needsBorder())) {
-                    HundredFieldCore.chalkDraw(x, y, x + width, y, ctx, 4 * i, brushRadius);
+                    HundredFieldLibrary.chalkDraw(x, y, x + width, y, ctx, 4 * i, brushRadius);
                 } else if (i === this.nbOfColumns && (this.get(i - 1, j).needsBorder())) {
-                    HundredFieldCore.chalkDraw(x, y, x + width, y, ctx, 4 * i, brushRadius);
+                    HundredFieldLibrary.chalkDraw(x, y, x + width, y, ctx, 4 * i, brushRadius);
                 }
             }
         }
@@ -519,7 +543,7 @@ HundredFieldCore.HundredField.prototype.redraw = function () {
 };
 
 /*
- * HundredFieldCore.chalkDraw(x1, y1, x2, y2, ctx, random, brushRadius)
+ * HundredFieldLibrary.chalkDraw(x1, y1, x2, y2, ctx, random, brushRadius)
  *
  * Draws a chalky line from the given starting point (x1, y1) to the given
  * ending point (x2, y2) on the given context. To generate the line, a random seed
@@ -533,7 +557,7 @@ HundredFieldCore.HundredField.prototype.redraw = function () {
  * @param seed          the seed to use for the random number generation
  * @param brushRadius   the radius of the line to draw
  */
-HundredFieldCore.chalkDraw = function (x1, y1, x2, y2, ctx, seed, brushRadius) {
+HundredFieldLibrary.chalkDraw = function (x1, y1, x2, y2, ctx, seed, brushRadius) {
     "use strict";
     
     var i, alpha, length, invLength, xDiff, yDiff, xUnit, yUnit, xCurrent, yCurrent, xRandom, yRandom, random;
@@ -557,14 +581,14 @@ HundredFieldCore.chalkDraw = function (x1, y1, x2, y2, ctx, seed, brushRadius) {
     
     xCurrent = x1;
     yCurrent = y1;
-    random = new HundredFieldCore.Random(seed);
+    random = new Random.Random(seed);
     
     for (i = 0; i < length; i += 1) {
-        xRandom = xCurrent + (random.random() - 0.5) * brushRadius;
-        yRandom = yCurrent + (random.random() - 0.5) * brushRadius;
+        xRandom = xCurrent + (random.next() - 0.5) * brushRadius;
+        yRandom = yCurrent + (random.next() - 0.5) * brushRadius;
         xCurrent += xUnit;
         yCurrent += yUnit;
-        ctx.clearRect(xRandom, yRandom, random.random() * 2 + 1, random.random() + 1);
+        ctx.clearRect(xRandom, yRandom, random.next() * 2 + 1, random.next() + 1);
     }
     
     ctx.strokeStyle = 'rgba(255,255,255,0.5)';
@@ -572,4 +596,124 @@ HundredFieldCore.chalkDraw = function (x1, y1, x2, y2, ctx, seed, brushRadius) {
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2,  y2);
     ctx.stroke();
+};
+
+/*-----------------------------------------------------------------------------
+ * HundredFieldLibrary.getNeighbours = function (cell, hundredField)
+ *
+ * Returns all the neighbours of the given cell in the given hundredfield.
+ *
+ * @param cell          the cell to search the neighbours of.
+ * @param hundredField  the hundredfield to retrieve the neighbours of the cell
+ *                      from.
+ * @return all the neighbours of the given cell in the given hundredfield.
+ *---------------------------------------------------------------------------*/
+
+HundredFieldLibrary.getNeighbours = function (cell, hundredField) {
+    "use strict";
+    
+    var i, j, row, column, cells;
+    
+    cells = [];
+    
+    for (i = -1; i <= 1; i += 1) {
+        for (j = -1; j <= 1; j += 1) {
+            row = cell.row + i;
+            column = cell.column + j;
+    
+            if (!(i === 0 && j === 0) && row >= 0 && column >= 0 && row < hundredField.nbOfRows && column < hundredField.nbOfColumns) {
+                cells.push(hundredField.get(row, column));
+            }
+        }
+    }
+    
+    return cells;
+};
+
+/*-----------------------------------------------------------------------------
+ * HundredFieldLibrary.countNeighbours = function (cell, cells)
+ *
+ * Returns the number of cells from the 'cells' array that are neighbours of
+ * the given cell.
+ *
+ * @param cell  the cell to find the number of neighbours from
+ * @param cells the array containing the cells which have to be tested whether
+ *              they are a neighbour of the given cell.
+ *---------------------------------------------------------------------------*/
+
+HundredFieldLibrary.countNeighbours = function (cell, cells) {
+    "use strict";
+    
+    var i, xDiff, yDiff, distance, neighbours;
+    
+    neighbours = 0;
+    
+    for (i = 0; i < cells.length; i += 1) {
+        xDiff = Math.abs(cell.row - cells[i].row);
+        yDiff = Math.abs(cell.column - cells[i].column);
+        
+        if (xDiff <= 1 && yDiff <= 1) {
+            neighbours += 1;
+        }
+    }
+    return neighbours;
+};
+
+/*-----------------------------------------------------------------------------
+ * HundredFieldLibrary.possibleElements = function (cells hundredField)
+ *
+ * Returns all the cells which only have one neighbour are a neighbour of one
+ * of the cells in the given 'cells' array.
+ * 
+ * @param cells         the cells to find the neigbours of.
+ * @param hundredField  the hundredfield to search the elemens in.
+ *
+ * @return all the cells which only have one neighbour are a neighbour of one
+ * of the cells in the given 'cells' array.
+ *---------------------------------------------------------------------------*/
+HundredFieldLibrary.possibleElements = function (cells, hundredField) {
+    "use strict";
+    
+    var i, j, k, canAdd, candidates, neighbours, result;
+    
+    // get all the neighbours
+    candidates = [];
+    for (i = 0; i < cells.length; i += 1) {
+        neighbours = HundredFieldLibrary.getNeighbours(cells[i], hundredField);
+        
+        // add the neighbours to the candidates if they are not yet present in the candite list
+        // and when they are not one of the given cells.
+        for (j = 0; j < neighbours.length; j += 1) {
+            canAdd = true;
+            
+            for (k = 0; k < cells.length; k += 1) {
+                if (cells[k].row === neighbours[j].row && cells[k].column === neighbours[j].column) {
+                    canAdd = false;
+                    break;
+                }
+            }
+            
+            if (canAdd) {
+                for (k = 0; k < candidates.length; k += 1) {
+                    if (candidates[k].row === neighbours[j].row && candidates[k].column === neighbours[j].column) {
+                        canAdd = false;
+                        break;
+                    }
+                }
+            }
+            if (canAdd) {
+                candidates.push(neighbours[j]);
+            }
+        }
+    }
+    
+    result = [];
+    
+    for (i = 0; i < candidates.length; i += 1) {
+        if (HundredFieldLibrary.countNeighbours(candidates[i], cells) <= 1) {
+            result.push(candidates[i]);
+        }
+    }
+    
+    return result;
 };

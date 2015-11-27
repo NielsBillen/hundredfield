@@ -4,7 +4,24 @@ body {
     
     display: flex;
     flex-direction: column;
+}
+
+form {
+    text-align: left;
+    display: flex;
+    flex-direction: row;
     align-items: center;
+}
+
+select, input {
+    font-family: "Raleway";
+    font-size: 3vmin;
+    padding: 0.5rem;
+}
+
+label {
+    padding-right: 1em;
+    flex-grow: 1;
 }
 
 #settings-header {
@@ -14,11 +31,13 @@ body {
 }
 
 #settings-container {
-    width: 50%;
+    margin: 2em;
+    display: flex;
+    flex-direction: column;
 }
 
 .bordered {
-    width: 100%;
+    text-align: left;
     
     font-size: 3vmin;
     font-family: "Raleway";
@@ -34,14 +53,4 @@ body {
     
     background-image: url(../images/border.jpg);
     background-repeat: repeat;
-}
-
-#offset-label {
-    padding-right: 1em;
-}
-
-#offset {
-    font-family: "Raleway";
-    font-size: 3vmin;
-    padding: 0.5rem;
 }

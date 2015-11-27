@@ -15,6 +15,11 @@ body {
     margin: 0;
 }
 
+/* center the header */
+header {
+    text-align: center;
+}
+
 /* font definition */
 @font-face {
     font-family: "Raleway";

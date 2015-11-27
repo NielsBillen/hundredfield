@@ -1,17 +1,18 @@
 /*-----------------------------------------------------------------------------
- * Javascript for controlling a hundred field
+ * Javascript for controlling the hundredfield, when first the cells to be 
+ * filled have to be selected.
  *---------------------------------------------------------------------------*/
 
-/*global console, HundredFieldCore */
+/*global console, Random, HundredFieldLibrary */
 
 var HundredFieldFill = HundredFieldFill || {};
 
 HundredFieldFill.HundredFieldFill = function (row, column, start) {
     "use strict";
     
-    this.hundredField = new HundredFieldCore.HundredField(row, column, start);
-    this.state = "select-start-cell";
+    var i, r, c, cell, cells, random, startCell, cellSelection, cellSelectionCount, candidates;
     
+    this.hundredField = new HundredFieldLibrary.HundredField(row, column, start);
     this.hundredField.addClickListener(this.cellClickListener.bind(this));
     this.hundredField.addInputListener(this.inputChangeListener.bind(this));
     
@@ -32,14 +33,15 @@ HundredFieldFill.HundredFieldFill = function (row, column, start) {
     this.scoreButton.className = "hundredfield-button";
     this.scoreButton.style.cursor = "default";
     
-    HundredFieldCore.addClickListener(this.hideButton, this.toggleHidden.bind(this));
-    HundredFieldCore.addClickListener(this.startButton, this.start.bind(this));
-    HundredFieldCore.addClickListener(this.checkButton, this.checkButton.bind(this));
-    HundredFieldCore.addClickListener(this.resetButton, function () {
+    HundredFieldLibrary.addClickListener(this.hideButton, this.toggleHidden.bind(this));
+    HundredFieldLibrary.addClickListener(this.startButton, this.start.bind(this));
+    HundredFieldLibrary.addClickListener(this.checkButton, this.check.bind(this));
+    HundredFieldLibrary.addClickListener(this.resetButton, function () {
         window.location.reload();
     });
-
-    this.hundredField.resize();
+    
+    // set the starting state
+    this.state = "select-start-cell";
 };
 
 HundredFieldFill.HundredFieldFill.prototype.toggleHidden = function () {
@@ -51,22 +53,59 @@ HundredFieldFill.HundredFieldFill.prototype.toggleHidden = function () {
 HundredFieldFill.HundredFieldFill.prototype.cellClickListener = function (event, cell) {
     "use strict";
     
+    var buttonContainer, cellSelection, cellSelectionCount, random, r, c, i, cells, candidates;
+    
     if (this.state === "select-start-cell") {
         cell.setStart(true);
+        
         this.state = "select-fill-cells";
+        
+        cellSelection = localStorage.getItem("settings.hundredfield.cellselection");
+        
+        // choose other cells automatically
+        if (cellSelection === "automatic") {
+            // choose a random starting cell
+            random = new Random.Random(new Date().getTime());
+            r = random.nextInt(this.hundredField.nbOfRows);
+            c = random.nextInt(this.hundredField.nbOfColumns);
+            cells = [cell];
+
+            // get the number of cells to select
+            cellSelectionCount = parseInt(localStorage.getItem("settings.hundredfield.cellselectionamount"), 10);
+            if (!cellSelectionCount || cellSelection === null || typeof cellSelectionCount !== "number") {
+                cellSelectionCount = 10;
+            }
+
+            // select the following cells
+            for (i = 0; i < cellSelectionCount; i += 1) {
+                candidates = HundredFieldLibrary.possibleElements(cells, this.hundredField);
+
+                if (candidates.length > 0) {
+                    cell = candidates[random.nextInt(candidates.length)];
+                    cell.setSelected(true);
+                    cells.push(cell);
+                } else {
+                    break;
+                }
+            }
+        }
     } else if (this.state === "select-fill-cells" && !this.hundredField.isHidden()) {
         if (!cell.input.classList.contains("hundredfield-input-start")) {
             cell.setSelected(!cell.selected);
-            
-            var buttonContainer = document.getElementById("hundredfield-button-container");
+        }
+    }
+    
+    buttonContainer = document.getElementById("hundredfield-control-container");
 
-            if (this.hundredField.nbOfSelectedCells() > 0) {
-                buttonContainer.appendChild(this.startButton);
-                buttonContainer.appendChild(this.hideButton);
-            } else {
-                buttonContainer.removeChild(this.startButton);
-                buttonContainer.removeChild(this.hideButton);
-            }
+    if (this.hundredField.nbOfSelectedCells() > 0) {
+        buttonContainer.appendChild(this.startButton);
+        buttonContainer.appendChild(this.hideButton);
+    } else {
+        if (buttonContainer.contains(this.startButton)) {
+            buttonContainer.removeChild(this.startButton);
+        }
+        if (buttonContainer.contains(this.hideButton)) {
+            buttonContainer.removeChild(this.hideButton);
         }
     }
 };
@@ -80,7 +119,7 @@ HundredFieldFill.HundredFieldFill.prototype.inputChangeListener = function (even
         
     var selectedCells, buttonContainer;
     
-    buttonContainer = document.getElementById("hundredfield-button-container");
+    buttonContainer = document.getElementById("hundredfield-control-container");
     
     if (this.hundredField.areSelectedFilled()) {
         if (!buttonContainer.contains(this.checkButton)) {
@@ -129,10 +168,13 @@ HundredFieldFill.HundredFieldFill.prototype.start = function () {
     selectedCells[0].getInput().focus();
     
     // hide the buttons
-    buttonContainer = document.getElementById("hundredfield-button-container");
-    buttonContainer.removeChild(this.startButton);
-    buttonContainer.removeChild(this.hideButton);
-    
+    buttonContainer = document.getElementById("hundredfield-control-container");
+    if (buttonContainer.contains(this.startButton)) {
+        buttonContainer.removeChild(this.startButton);
+    }
+    if (buttonContainer.contains(this.hideButton)) {
+        buttonContainer.removeChild(this.hideButton);
+    }
 };
 
 HundredFieldFill.HundredFieldFill.prototype.check = function () {
@@ -160,11 +202,11 @@ HundredFieldFill.HundredFieldFill.prototype.check = function () {
     }
     
     // show the score and the reset button
-    buttonContainer = document.getElementById("hundredfield-button-container");
+    buttonContainer = document.getElementById("hundredfield-control-container");
     buttonContainer.removeChild(this.checkButton);
     
     window.setTimeout(function () {
-        var buttonContainer = document.getElementById("hundredfield-button-container");
+        var buttonContainer = document.getElementById("hundredfield-control-container");
         buttonContainer.appendChild(this.scoreButton);
         buttonContainer.appendChild(this.resetButton);
     }.bind(this), 200);

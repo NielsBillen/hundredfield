@@ -1,9 +1,10 @@
 CACHE MANIFEST
-# Updated 20/11/2015 09:27
+# Updated 21/11/2015 13:22
 
 CACHE:
 fonts/Raleway-Bold.ttf
 
+hundredfield/hundredfield_auto.js
 hundredfield/hundredfield_fill.js
 hundredfield/hundredfield.css
 hundredfield/hundredfield.html

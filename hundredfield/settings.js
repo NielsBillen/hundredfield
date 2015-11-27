@@ -15,7 +15,7 @@ Settings.refreshTimeout = 1000;
 Settings.addClickListener = function (element, handler) {
     "use strict";
     
-    if (typeof document.body.ontouchend === "undefined") {
+    if (typeof document.body.ontouchend !== "undefined") {
         element.addEventListener("touchend", handler);
     } else {
         element.addEventListener("click", handler);
@@ -30,23 +30,32 @@ Settings.addClickListener = function (element, handler) {
  *---------------------------------------------------------------------------*/
 Settings.init = function () {
     "use strict";
-    var offset, offsetElement, backButton, updateButton, appCache;
+    var offset, offsetElement, cellSelection, cellSelectionElement,
+        cellSelectionAmount, cellSelectionAmountElement, backButton, updateButton, appCache;
     
     /* ------------------------------------------------------------------------
      * Load the offset stored in local storage, if present
      * ----------------------------------------------------------------------*/
     
-    offset = localStorage.getItem("settings.hundredfield.offset");
-    offsetElement = document.getElementById("offset");
-
-    if (offset) {
-        offsetElement.value = offset;
-    } else {
-        offsetElement.value = "1";
-        localStorage.setItem("settings.hundredfield.offset", offsetElement.value);
-    }
+    this.initFormSetting("offset", "settings.hundredfield.offset", "1");
     
-    offsetElement.onchange = Settings.onchange;
+    /* ------------------------------------------------------------------------
+     * Load the cell selection method stored in local storage, if present
+     * ----------------------------------------------------------------------*/
+    
+    this.initFormSetting("cellselection", "settings.hundredfield.cellselection", "manual", function (value) {
+        if (value === "manual") {
+            document.getElementById("cellselectionamountform").style.display = "none";
+        } else {
+            document.getElementById("cellselectionamountform").style.display = "";
+        }
+    });
+    
+    /* ------------------------------------------------------------------------
+     * Load the offset stored in local storage, if present
+     * ----------------------------------------------------------------------*/
+    
+    this.initFormSetting("cellselectionamount", "settings.hundredfield.cellselectionamount", 10);
     
     /* ------------------------------------------------------------------------
      * Listen for update events
@@ -120,6 +129,34 @@ Settings.init = function () {
     });
 };
 
+Settings.initFormSetting = function (elementTag, localStorageName, defaultValue, handler) {
+    "use strict";
+    
+    var value, formElement;
+    
+    formElement = document.getElementById(elementTag);
+    value = localStorage.getItem(localStorageName);
+
+    if (value) {
+        formElement.value = value;
+    } else {
+        formElement.value = defaultValue;
+        localStorage.setItem(localStorageName, formElement.value);
+    }
+    
+    if (handler) {
+        handler(formElement.value);
+    }
+    
+    formElement.addEventListener("change", function () {
+        localStorage.setItem(localStorageName, this.value);
+        
+        if (handler) {
+            handler(this.value);
+        }
+    }.bind(formElement));
+};
+
 Settings.update = function () {
     "use strict";
     
@@ -151,11 +188,10 @@ Settings.updateReset = function () {
     }, Settings.refreshTimeout);
 };
 
-Settings.onchange = function (e) {
+Settings.offsetChange = function (e) {
     "use strict";
     
     var offsetElement = document.getElementById("offset");
-
     localStorage.setItem("settings.hundredfield.offset", offsetElement.value);
 };
 

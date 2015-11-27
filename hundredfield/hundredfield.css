@@ -84,7 +84,7 @@ body {
 
 /* styling for cells which are selected for editing */
 .hundredfield-cell-selected {
-    background-color: rgba(112, 128, 144, 0.7);
+    background-color: rgba(30, 144, 255, 0.5);
 }
 
 /* styling for cells which selected when the field is hidden */
@@ -137,7 +137,7 @@ body {
 }
 
 /* styling for the button container */
-#hundredfield-button-container {
+#hundredfield-control-container {
     width: 80vmin;
     height: 8vmin;
     

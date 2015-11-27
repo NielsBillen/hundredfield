@@ -22,10 +22,10 @@
         <link rel="apple-touch-icon" type="image/png" sizes="512x512" href="../icons/icon512x512.png"></link>
     </head>
     <body>
-        <header id = "settings-header">Instellingen</header>
+        <header id = "settings-header">Instellingen (v0.1.2)</header>
         <div id = "settings-container">
-            <form class = "bordered" style = "text-align: center;">
-                <label id = "offset-label" for="offset">Startwaarde</label>
+            <form class = "setting bordered">
+                <label for="offset">Startwaarde</label>
                 <select id = "offset">
                     <option value = "1">1</option>
                     <option value = "101">101</option>
@@ -39,8 +39,20 @@
                     <option value = "901">901</option>
                 </select>
             </form>
-            <button class = "bordered" id = "updatebutton">Checking for updates...</button>
-            <button class = "bordered" id = "backbutton">Terug</button>
+            <form class = "setting bordered">
+                <label for="cellselection">Cell selectie</label>
+                <select id = "cellselection">
+                    <option value = "manual">Manueel</option>
+                    <option value = "automatic">Automatisch</option>
+                </select>
+            </form>
+            <form class = "setting bordered" id = "cellselectionamountform">
+                <label for="cellselectionamount">Aantal automatisch geselecteerde cellen</label>
+                <input id = "cellselectionamount" type="number">
+                </input>
+            </form>
+            <button class = "setting bordered" id = "updatebutton">Check for updates</button>
+            <button class = "setting bordered" id = "backbutton">Terug</button>
         </div>
         
     </body>
