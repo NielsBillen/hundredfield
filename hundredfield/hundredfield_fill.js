@@ -90,6 +90,16 @@ HundredFieldFill.HundredFieldFill.prototype.cellClickListener = function (event,
                 }
             }
         }
+        
+        buttonContainer = document.getElementById("hundredfield-control-container");
+        
+        while (buttonContainer.firstChild) {
+            buttonContainer.removeChild(buttonContainer.firstChild);
+        }
+        if (this.hundredField.nbOfSelectedCells() > 0) {
+            buttonContainer.appendChild(this.startButton);
+            buttonContainer.appendChild(this.hideButton);
+        }
     } else if (this.state === "select-fill-cells" && !this.hundredField.isHidden()) {
         if (!cell.input.classList.contains("hundredfield-input-start")) {
             cell.setSelected(!cell.selected);
