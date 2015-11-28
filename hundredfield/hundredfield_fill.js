@@ -60,6 +60,7 @@ HundredFieldFill.HundredFieldFill.prototype.cellClickListener = function (event,
         
         this.state = "select-fill-cells";
         
+        // determine the cell selection mechanism
         cellSelection = localStorage.getItem("settings.hundredfield.cellselection");
         
         // choose other cells automatically
@@ -73,7 +74,7 @@ HundredFieldFill.HundredFieldFill.prototype.cellClickListener = function (event,
             // get the number of cells to select
             cellSelectionCount = parseInt(localStorage.getItem("settings.hundredfield.cellselectionamount"), 10);
             if (!cellSelectionCount || cellSelection === null || typeof cellSelectionCount !== "number") {
-                cellSelectionCount = 10;
+                cellSelectionCount = 6;
             }
 
             // select the following cells
@@ -93,19 +94,15 @@ HundredFieldFill.HundredFieldFill.prototype.cellClickListener = function (event,
         if (!cell.input.classList.contains("hundredfield-input-start")) {
             cell.setSelected(!cell.selected);
         }
-    }
-    
-    buttonContainer = document.getElementById("hundredfield-control-container");
+        
+        buttonContainer = document.getElementById("hundredfield-control-container");
 
-    if (this.hundredField.nbOfSelectedCells() > 0) {
-        buttonContainer.appendChild(this.startButton);
-        buttonContainer.appendChild(this.hideButton);
-    } else {
-        if (buttonContainer.contains(this.startButton)) {
-            buttonContainer.removeChild(this.startButton);
+        while (buttonContainer.firstChild) {
+            buttonContainer.removeChild(buttonContainer.firstChild);
         }
-        if (buttonContainer.contains(this.hideButton)) {
-            buttonContainer.removeChild(this.hideButton);
+        if (this.hundredField.nbOfSelectedCells() > 0) {
+            buttonContainer.appendChild(this.startButton);
+            buttonContainer.appendChild(this.hideButton);
         }
     }
 };
@@ -121,21 +118,18 @@ HundredFieldFill.HundredFieldFill.prototype.inputChangeListener = function (even
     
     buttonContainer = document.getElementById("hundredfield-control-container");
     
+    while (buttonContainer.firstChild) {
+        buttonContainer.removeChild(buttonContainer.firstChild);
+    }
     if (this.hundredField.areSelectedFilled()) {
-        if (!buttonContainer.contains(this.checkButton)) {
-            buttonContainer.appendChild(this.checkButton);
-        }
-    } else {
-        if (buttonContainer.contains(this.checkButton)) {
-            buttonContainer.removeChild(this.checkButton);
-        }
+        buttonContainer.appendChild(this.checkButton);
     }
 };
 
 HundredFieldFill.HundredFieldFill.prototype.start = function () {
     "use strict";
         
-    if (this.state !== "select-fill-cells") {
+    if (this.state !== "select-fill-cells" || this.hundredField.nbOfSelectedCells() === 0) {
         return;
     }
     
@@ -169,11 +163,8 @@ HundredFieldFill.HundredFieldFill.prototype.start = function () {
     
     // hide the buttons
     buttonContainer = document.getElementById("hundredfield-control-container");
-    if (buttonContainer.contains(this.startButton)) {
-        buttonContainer.removeChild(this.startButton);
-    }
-    if (buttonContainer.contains(this.hideButton)) {
-        buttonContainer.removeChild(this.hideButton);
+    while (buttonContainer.firstChild) {
+        buttonContainer.removeChild(buttonContainer.firstChild);
     }
 };
 
@@ -203,7 +194,9 @@ HundredFieldFill.HundredFieldFill.prototype.check = function () {
     
     // show the score and the reset button
     buttonContainer = document.getElementById("hundredfield-control-container");
-    buttonContainer.removeChild(this.checkButton);
+    while (buttonContainer.firstChild) {
+        buttonContainer.removeChild(buttonContainer.firstChild);
+    }
     
     window.setTimeout(function () {
         var buttonContainer = document.getElementById("hundredfield-control-container");
