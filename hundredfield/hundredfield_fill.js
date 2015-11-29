@@ -17,15 +17,15 @@ HundredFieldFill.HundredFieldFill = function (row, column, start) {
     this.hundredField.addInputListener(this.inputChangeListener.bind(this));
     
     this.startButton = document.createElement("button");
-    this.hideButton = document.createElement("button");
+    this.hideButton  = document.createElement("button");
     this.checkButton = document.createElement("button");
     this.resetButton = document.createElement("button");
     this.scoreButton = document.createElement("button");
     
     this.startButton.className = "hundredfield-button";
     this.startButton.innerHTML = "Start";
-    this.hideButton.className = "hundredfield-button";
-    this.hideButton.innerHTML = "Verberg veld";
+    this.hideButton.className  = "hundredfield-button";
+    this.hideButton.innerHTML  = "Verberg veld";
     this.checkButton.className = "hundredfield-button";
     this.checkButton.innerHTML = "Controleer oplossing";
     this.resetButton.className = "hundredfield-button";
@@ -170,6 +170,8 @@ HundredFieldFill.HundredFieldFill.prototype.start = function () {
     
     // focus on the first cell
     selectedCells[0].getInput().focus();
+    selectedCells[0].getInput().click();
+    
     
     // hide the buttons
     buttonContainer = document.getElementById("hundredfield-control-container");
