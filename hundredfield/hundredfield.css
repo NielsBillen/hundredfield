@@ -47,8 +47,8 @@ body {
 /* styling for the container of the canvas and table */
 #hundredfield-wrapper {
     position: relative;
-    width: 100%;
-    height: 100%;
+    width: 76vmin;
+    height: 76vmin;
     
     border: lightgray solid 2px;
     
@@ -58,6 +58,11 @@ body {
 
 /* styling for the table */
 #hundredfield-table {
+    position:absolute;
+    left:0;
+    top:0;
+    width: 100%;
+    height: 100%;
     border-spacing: 0;
     border-collapse: collapse;
 }
@@ -67,6 +72,8 @@ body {
     position:absolute;
     left:0;
     top:0;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
 }
 
