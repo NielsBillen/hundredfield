@@ -47,8 +47,6 @@ body {
 /* styling for the container of the canvas and table */
 #hundredfield-wrapper {
     position: relative;
-    width: 76vmin;
-    height: 76vmin;
     
     border: lightgray solid 2px;
     

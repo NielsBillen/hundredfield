@@ -369,28 +369,22 @@ HundredFieldLibrary.HundredField.prototype.resize = function () {
     "use strict";
     
     var border, wrapper, table, canvas, size;
-    
-    table = document.getElementById("hundredfield-table");
-    canvas = document.getElementById("hundredfield-canvas");
-    
-    canvas.width = table.clientWidth;
-    canvas.height = table.clientHeight;
-    /*border = document.getElementById("hundredfield-border");
+
+    border = document.getElementById("hundredfield-border");
     wrapper = document.getElementById("hundredfield-wrapper");
     table = document.getElementById("hundredfield-table");
     canvas = document.getElementById("hundredfield-canvas");
         
     wrapper.style.display = "none";
     size = Math.floor(Math.min(border.clientWidth, border.clientHeight) * 0.1 * 0.95) * 10;
-    console.log(border.clientWidth + ", " + border.clientHeight);
-
     wrapper.style.display = "";
+    
     wrapper.style.width = size + "px";
     wrapper.style.height = size + "px";
-    table.style.width = size + "px";
-    table.style.height = size + "px";
+    /*table.style.width = size + "px";
+    table.style.height = size + "px";*/
     canvas.width = size;
-    canvas.height = size;*/
+    canvas.height = size;
     
     this.redraw();
 };
