@@ -284,12 +284,6 @@ HundredFieldLibrary.HundredField = function (rows, columns, start) {
         
         this.cells.push(cellRow);
     }
-    
-    this.resize();
-    
-    window.addEventListener('resize', function (e) {
-        this.resize();
-    }.bind(this), true);
 };
 
 /*
@@ -358,37 +352,6 @@ HundredFieldLibrary.HundredField.prototype.addInputListener = function (handler)
     }
 };
 
-/*-----------------------------------------------------------------------------
- * HundredFieldLibrary.resize()
- *
- * Listens for resize events and sets the sizes of all the objects
- * accordingly.
- *---------------------------------------------------------------------------*/
-
-HundredFieldLibrary.HundredField.prototype.resize = function () {
-    "use strict";
-    
-    var border, wrapper, table, canvas, size;
-
-    border = document.getElementById("hundredfield-border");
-    wrapper = document.getElementById("hundredfield-wrapper");
-    table = document.getElementById("hundredfield-table");
-    canvas = document.getElementById("hundredfield-canvas");
-        
-    wrapper.style.display = "none";
-    size = Math.floor(Math.min(border.clientWidth, border.clientHeight) * 0.1 * 0.95) * 10;
-    wrapper.style.display = "";
-    
-    wrapper.style.width = size + "px";
-    wrapper.style.height = size + "px";
-    /*table.style.width = size + "px";
-    table.style.height = size + "px";*/
-    canvas.width = size;
-    canvas.height = size;
-    
-    this.redraw();
-};
-
 HundredFieldLibrary.HundredField.prototype.isHidden = function () {
     "use strict";
     return this.hidden;
@@ -405,9 +368,6 @@ HundredFieldLibrary.HundredField.prototype.setHidden = function (value) {
             cell = this.get(r, c).setHidden(this.hidden);
         }
     }
-    
-
-    this.redraw();
 };
 
 HundredFieldLibrary.HundredField.prototype.getSelectedCells = function () {
@@ -463,141 +423,6 @@ HundredFieldLibrary.HundredField.prototype.areSelectedFilled = function () {
     }
     
     return true;
-};
-
-/*-----------------------------------------------------------------------------
- * Redraw the grid of lines
- *---------------------------------------------------------------------------*/
-
-HundredFieldLibrary.HundredField.prototype.redraw = function () {
-    "use strict";
-    
-    var i, j, x, y, canvas, table, margin, offset, ctx, width, height, brushRadius;
-    
-    // retrieve the necessary elements
-    canvas = document.getElementById("hundredfield-canvas");
-    table = document.getElementById("hundredfield-table");
-    ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    brushRadius = canvas.width * 0.004;
-    offset = 0;
-    
-    if (!this.hidden) {
-        width = (canvas.width - 2 * brushRadius * offset) / this.nbOfColumns;
-        height = (canvas.height - 2 * brushRadius * offset) / this.nbOfRows;
-
-        for (i = 0; i <= this.nbOfColumns; i += 1) {
-            for (j = 0; j < this.nbOfRows; j += 1) {
-                x = i * width + brushRadius * offset;
-                y = j * height + brushRadius * offset;
-                
-                // draw a vertical line
-                HundredFieldLibrary.chalkDraw(x, y, x, y + height, ctx, 2 * (i * this.nbOfColumns + j), brushRadius);
-            }
-        }
-        
-        for (i = 0; i <= this.nbOfRows; i += 1) {
-            for (j = 0; j < this.nbOfColumns; j += 1) {
-                x = j * width + brushRadius * offset;
-                y = i * height + brushRadius * offset;
-                
-                // draw a horizontal line
-                HundredFieldLibrary.chalkDraw(x, y, x + width, y, ctx, 2 * (i * this.nbOfColumns + j) + 1, brushRadius);
-            }
-        }
-    } else {
-        width = (canvas.width - 2 * brushRadius * offset) / this.nbOfColumns;
-        height = (canvas.height - 2 * brushRadius * offset) / this.nbOfRows;
-        
-        for (i = 0; i <= this.nbOfColumns; i += 1) {
-            for (j = 0; j < this.nbOfRows; j += 1) {
-                x = i * width + brushRadius * offset;
-                y = j * height + brushRadius * offset;
-                
-                // draw a vertical line
-                if (i === 0 && this.nbOfColumns > 0 && this.get(j, i).needsBorder()) {
-                    HundredFieldLibrary.chalkDraw(x, y, x, y + height, ctx, 4 * i + 2 * j, brushRadius);
-                } else if (i > 0 && i < this.nbOfColumns && (this.get(j, i).needsBorder() || this.get(j, i - 1).needsBorder())) {
-                    HundredFieldLibrary.chalkDraw(x, y, x, y + height, ctx, 4 * i + 2 * j + 1, brushRadius);
-                } else if (i === this.nbOfColumns && (this.get(j, i - 1).needsBorder())) {
-                    HundredFieldLibrary.chalkDraw(x, y, x, y + height, ctx, 4 * i + 2 * j + 1, brushRadius);
-                }
-            }
-        }
-        
-        for (i = 0; i <= this.nbOfRows; i += 1) {
-            for (j = 0; j < this.nbOfColumns; j += 1) {
-                x = j * width + brushRadius * offset;
-                y = i * height + brushRadius * offset;
-                
-                // draw a vertical line
-                if (i === 0 && this.nbOfColumns > 0 && this.get(i, j).needsBorder()) {
-                    HundredFieldLibrary.chalkDraw(x, y, x + width, y, ctx, 4 * i, brushRadius);
-                } else if (i > 0 && i < this.nbOfColumns && (this.get(i, j).needsBorder() || this.get(i - 1, j).needsBorder())) {
-                    HundredFieldLibrary.chalkDraw(x, y, x + width, y, ctx, 4 * i, brushRadius);
-                } else if (i === this.nbOfColumns && (this.get(i - 1, j).needsBorder())) {
-                    HundredFieldLibrary.chalkDraw(x, y, x + width, y, ctx, 4 * i, brushRadius);
-                }
-            }
-        }
-    }
-};
-
-/*
- * HundredFieldLibrary.chalkDraw(x1, y1, x2, y2, ctx, random, brushRadius)
- *
- * Draws a chalky line from the given starting point (x1, y1) to the given
- * ending point (x2, y2) on the given context. To generate the line, a random seed
- * has to be given, along with the radius of the brush.
- *
- * @param x1            the x coordinate of the starting point
- * @param y1            the y coordinate of the starting point
- * @param x2            the x coordinate of the ending point
- * @param y2            the y coordinate of the ending point
- * @param ctx           the context to draw upon
- * @param seed          the seed to use for the random number generation
- * @param brushRadius   the radius of the line to draw
- */
-HundredFieldLibrary.chalkDraw = function (x1, y1, x2, y2, ctx, seed, brushRadius) {
-    "use strict";
-    
-    var i, alpha, length, invLength, xDiff, yDiff, xUnit, yUnit, xCurrent, yCurrent, xRandom, yRandom, random;
-        
-    ctx.lineWidth = (brushRadius * 2);
-	ctx.lineCap = 'round';
-          
-    xDiff = Math.pow(x2 - x1, 2);
-    yDiff = Math.pow(y2 - y1, 2);
-    
-    length = Math.round(Math.sqrt(xDiff + yDiff)) * 0.5;
-    invLength = 1.0 / length;
-    xUnit = (x2 - x1) * invLength;
-    yUnit = (y2 - y1) * invLength;
-    
-    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2,  y2);
-    ctx.stroke();
-    
-    xCurrent = x1;
-    yCurrent = y1;
-    random = new Random.Random(seed);
-    
-    for (i = 0; i < length; i += 1) {
-        xRandom = xCurrent + (random.next() - 0.5) * brushRadius;
-        yRandom = yCurrent + (random.next() - 0.5) * brushRadius;
-        xCurrent += xUnit;
-        yCurrent += yUnit;
-        ctx.clearRect(xRandom, yRandom, random.next() * 2 + 1, random.next() + 1);
-    }
-    
-    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2,  y2);
-    ctx.stroke();
 };
 
 /*-----------------------------------------------------------------------------
