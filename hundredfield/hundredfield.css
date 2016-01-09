@@ -16,11 +16,15 @@ body {
 /* styling for the header */
 #hundredfield-header {
     position: relative;
+}
+
+#hundredfield-header > h1 {
     text-align: center;
     font-family: "Raleway";
     font-size: 7vmin;
     width: 80vmin;
     height: 10vmin;
+    margin: 0;
 }
 
 /* styling for the wooden border of the hundredfield */
